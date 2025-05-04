@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build directories
+dist/
+build/
+
+# Debug logs
+logs/
+*.log
+
+# Uploaded files and generated content
+uploads/
+*.mp3
+*.pdf
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editor specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.editorconfig
+
+# Coverage/test reports
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+.tmp/
+*.tmp
+*.bak
