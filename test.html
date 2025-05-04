@@ -27,6 +27,16 @@
             padding: 15px;
             border-radius: 5px;
         }
+        .highlights {
+            margin: 20px 0;
+        }
+        .highlight {
+            background-color: #f0f7ff;
+            padding: 8px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
         .progress-steps {
             margin: 20px 0;
             text-align: left;
@@ -36,6 +46,25 @@
             padding: 10px;
             border-radius: 5px;
             background-color: #f3f3f3;
+        }
+        .cat-presentation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+        .cat-image {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .audio-player {
+            width: 100%;
+            max-width: 400px;
         }
     </style>
 </head>
@@ -60,11 +89,11 @@
                         <h2>Processing Your Resume</h2>
                         <div class="progress-steps">
                             <div class="progress-step">1. Extracting text from PDF ⏳</div>
-                            <div class="progress-step">2. Analyzing resume and generating summary ⏳</div>
+                            <div class="progress-step">2. Analyzing resume and extracting key points ⏳</div>
                             <div class="progress-step">3. Creating cat presenter image ⏳</div>
-                            <div class="progress-step">4. Generating 15-second cat video ⏳</div>
+                            <div class="progress-step">4. Generating cat voice audio ⏳</div>
                         </div>
-                        <p><small>This entire process may take 5-10 minutes. Please be patient!</small></p>
+                        <p><small>This entire process may take 3-5 minutes. Please be patient!</small></p>
                         <div class="loading-spinner"></div>
                     </div>
                 `;
@@ -77,45 +106,56 @@
                 const data = await response.json();
                 console.log("Response from server:", data);
                 
-                // Determine if the response is a video or image
-                let mediaHtml = '';
-                if (data.videoUrl) {
-                    // Check if it's an image URL (ends with image extension)
-                    if (data.videoUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
-                        mediaHtml = `
-                            <h3>Generated Cat Image:</h3>
-                            <img src="${data.videoUrl}" alt="Generated cat image" style="max-width: 100%;">
-                            <p><a href="${data.videoUrl}" target="_blank">Open image in new tab</a></p>
-                            <p><small>Note: We generated an image instead of a video due to technical limitations.</small></p>
-                        `;
-                    } 
-                    // Check if it's a video URL (ends with video extension)
-                    else if (data.videoUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
-                        mediaHtml = `
-                            <h3>Generated Cat Video:</h3>
-                            <video controls width="480" height="480" style="max-width: 100%;">
-                                <source src="${data.videoUrl}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                            <p><a href="${data.videoUrl}" target="_blank">Open video in new tab</a></p>
-                        `;
-                    } 
-                    // Otherwise just show the URL as text
-                    else {
-                        mediaHtml = `
-                            <h3>Generated Content:</h3>
-                            <p>URL: <a href="${data.videoUrl}" target="_blank">${data.videoUrl}</a></p>
-                        `;
-                    }
-                } else {
-                    mediaHtml = `<p>No content URL was returned</p>`;
+                // Create highlights HTML
+                let highlightsHtml = '';
+                if (data.highlights && Array.isArray(data.highlights)) {
+                    highlightsHtml = `
+                        <h3>Key Resume Highlights:</h3>
+                        <div class="highlights">
+                            ${data.highlights.map(highlight => `<div class="highlight">${highlight}</div>`).join('')}
+                        </div>
+                    `;
                 }
                 
+                // Create cat presentation with image and audio
+                let catPresentationHtml = '';
+                
+                // Check if we have an image URL
+                if (data.imageUrl && typeof data.imageUrl === 'string') {
+                    // Image part
+                    const imageHtml = `
+                        <img src="${data.imageUrl}" alt="Cat presenting resume highlights" class="cat-image">
+                    `;
+                    
+                    // Audio part
+                    let audioHtml = '';
+                    if (data.audioUrl && typeof data.audioUrl === 'string') {
+                        audioHtml = `
+                            <h4>Listen to Professor Whiskers review this resume:</h4>
+                            <audio controls class="audio-player">
+                                <source src="${data.audioUrl}" type="audio/mp3">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <p><a href="${data.audioUrl}" target="_blank">Download audio</a></p>
+                        `;
+                    }
+                    
+                    catPresentationHtml = `
+                        <div class="cat-presentation">
+                            <h3>Professor Whiskers Reviews This Resume</h3>
+                            ${imageHtml}
+                            ${audioHtml}
+                        </div>
+                    `;
+                }
+                
+                // Output the final result
                 document.getElementById('result').innerHTML = `
                     <h2>Resume Analysis Complete</h2>
-                    <h3>Resume Summary:</h3>
-                    <pre>${data.summary}</pre>
-                    ${mediaHtml}
+                    ${highlightsHtml}
+                    ${catPresentationHtml}
+                    <h3>Full Resume Summary:</h3>
+                    <pre>${typeof data.summary === 'string' ? data.summary : JSON.stringify(data.summary, null, 2)}</pre>
                 `;
             } catch (error) {
                 console.error("Error:", error);

@@ -2,7 +2,8 @@
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const { summarizeResume, getResumeHighlights } = require('../services/anthropicService');
-const { generateVideo } = require('../services/replicateService');
+const { generateCatImage } = require('../services/replicateService');
+const { generateCatAudio } = require('../services/audioService');
 
 async function processResume(req, res) {
   try {
@@ -36,9 +37,13 @@ async function processResume(req, res) {
       highlights = ["Key Experience", "Technical Skills", "Education", "Achievements", "Core Competencies"];
     }
 
-    // Generate video using Replicate
-    const videoUrl = await generateVideo(summary, highlights);
-    console.log("Media generated successfully:", videoUrl);
+    // Generate cat image using Replicate
+    const imageUrl = await generateCatImage(summary, highlights);
+    console.log("Cat image generated successfully:", imageUrl);
+    
+    // Generate cat audio using Replicate
+    const audioUrl = await generateCatAudio(summary, highlights);
+    console.log("Cat audio generated successfully:", audioUrl);
 
     // Delete the temporary file
     try {
@@ -51,7 +56,8 @@ async function processResume(req, res) {
     res.status(200).json({
       summary,
       highlights,
-      videoUrl
+      imageUrl,
+      audioUrl
     });
 
   } catch (error) {

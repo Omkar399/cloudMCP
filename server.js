@@ -39,6 +39,9 @@ const upload = multer({
   }
 });
 
+// Serve audio files from uploads directory
+app.use('/audio', express.static(path.join(__dirname, 'uploads')));
+
 // Routes
 app.post('/api/resume', upload.single('resume'), processResume);
 
