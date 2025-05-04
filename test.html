@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Upload Test</title>
+    <style>
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .loading-spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        pre {
+            white-space: pre-wrap;
+            max-width: 100%;
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .progress-steps {
+            margin: 20px 0;
+            text-align: left;
+        }
+        .progress-step {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f3f3f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resume Upload</h1>
+    <form id="resumeForm" enctype="multipart/form-data">
+        <input type="file" name="resume" accept=".pdf" required>
+        <button type="submit">Upload Resume</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('resumeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            try {
+                // Show loading indicator with progress steps
+                document.getElementById('result').innerHTML = `
+                    <div class="loading">
+                        <h2>Processing Your Resume</h2>
+                        <div class="progress-steps">
+                            <div class="progress-step">1. Extracting text from PDF ⏳</div>
+                            <div class="progress-step">2. Analyzing resume and generating summary ⏳</div>
+                            <div class="progress-step">3. Creating cat presenter image ⏳</div>
+                            <div class="progress-step">4. Generating 15-second cat video ⏳</div>
+                        </div>
+                        <p><small>This entire process may take 5-10 minutes. Please be patient!</small></p>
+                        <div class="loading-spinner"></div>
+                    </div>
+                `;
+                
+                const response = await fetch('http://localhost:3000/api/resume', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                console.log("Response from server:", data);
+                
+                // Determine if the response is a video or image
+                let mediaHtml = '';
+                if (data.videoUrl) {
+                    // Check if it's an image URL (ends with image extension)
+                    if (data.videoUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                        mediaHtml = `
+                            <h3>Generated Cat Image:</h3>
+                            <img src="${data.videoUrl}" alt="Generated cat image" style="max-width: 100%;">
+                            <p><a href="${data.videoUrl}" target="_blank">Open image in new tab</a></p>
+                            <p><small>Note: We generated an image instead of a video due to technical limitations.</small></p>
+                        `;
+                    } 
+                    // Check if it's a video URL (ends with video extension)
+                    else if (data.videoUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
+                        mediaHtml = `
+                            <h3>Generated Cat Video:</h3>
+                            <video controls width="480" height="480" style="max-width: 100%;">
+                                <source src="${data.videoUrl}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <p><a href="${data.videoUrl}" target="_blank">Open video in new tab</a></p>
+                        `;
+                    } 
+                    // Otherwise just show the URL as text
+                    else {
+                        mediaHtml = `
+                            <h3>Generated Content:</h3>
+                            <p>URL: <a href="${data.videoUrl}" target="_blank">${data.videoUrl}</a></p>
+                        `;
+                    }
+                } else {
+                    mediaHtml = `<p>No content URL was returned</p>`;
+                }
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>Resume Analysis Complete</h2>
+                    <h3>Resume Summary:</h3>
+                    <pre>${data.summary}</pre>
+                    ${mediaHtml}
+                `;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('result').innerHTML = `
+                    <h2>Error Processing Resume</h2>
+                    <p>${error.message}</p>
+                    <p>Please try again later or contact support.</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "cloudmcp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Omkar399/cloudMCP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Omkar399/cloudMCP/issues"
+  },
+  "homepage": "https://github.com/Omkar399/cloudMCP#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.1",
+    "@pinecone-database/pinecone": "^5.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "multer": "^1.4.5-lts.2",
+    "openai": "^4.97.0",
+    "pdf-parse": "^1.1.1",
+    "replicate": "^1.0.1"
+  }
+}
