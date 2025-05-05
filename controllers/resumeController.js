@@ -1,9 +1,8 @@
 // controllers/resumeController.js
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
-const { summarizeResume, getResumeHighlights } = require('../services/anthropicService');
+const { summarizeResume, getResumeHighlights , generateCatAudio,extractRelevantKeywords} = require('../services/openaiService');
 const { generateCatImage } = require('../services/replicateService');
-const { generateCatAudio } = require('../services/audioService');
 
 async function processResume(req, res) {
   try {
@@ -20,6 +19,7 @@ async function processResume(req, res) {
     // Get resume summary and highlights using Anthropic
     let summary = null;
     let highlights = null;
+    let keywords = null;
     
     try {
       summary = await summarizeResume(resumeText);
@@ -37,13 +37,37 @@ async function processResume(req, res) {
       highlights = ["Key Experience", "Technical Skills", "Education", "Achievements", "Core Competencies"];
     }
 
+    try {
+      keywords = await extractRelevantKeywords(resumeText);
+      console.log("Keywords extracted successfully:", keywords);
+    } catch (highlightsError) {
+      console.error("Error extracting highlights:", highlightsError);
+      keywords = ["Key Experience", "Technical Skills", "Education", "Achievements", "Core Competencies"];
+    }
     // Generate cat image using Replicate
-    const imageUrl = await generateCatImage(summary, highlights);
+    const imageUrl = await generateCatImage(summary, keywords);
     console.log("Cat image generated successfully:", imageUrl);
     
-    // Generate cat audio using Replicate
-    const audioUrl = await generateCatAudio(summary, highlights);
-    console.log("Cat audio generated successfully:", audioUrl);
+    // Generate cat audio using OpenAI
+    const audioResult = await generateCatAudio(summary, highlights);
+    let audioUrl = "Audio generation failed";
+    if (audioResult && audioResult.audioUrl) {
+      audioUrl = audioResult.audioUrl;
+      console.log("Cat audio generated successfully:", audioUrl);
+      console.log("Resume score:", audioResult.score, "- Justification:", audioResult.justification);
+    } else {
+      console.error("Audio generation failed:", audioResult);
+    }
+
+    // Return results
+    res.status(200).json({
+      summary,
+      highlights,
+      imageUrl,
+      audioUrl,
+      score: audioResult && audioResult.score ? audioResult.score : 3,
+      justification: audioResult && audioResult.justification ? audioResult.justification : "Unable to evaluate"
+    });
 
     // Delete the temporary file
     try {

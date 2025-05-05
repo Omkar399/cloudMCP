@@ -5,40 +5,29 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN
 });
 
-async function generateCatImage(summary, highlights = []) {
+async function generateCatImage(summary, keywords = []) {
   try {
     console.log("Generating professional cat image for resume...");
     
-    // Ensure highlights is an array
-    if (!Array.isArray(highlights) || highlights.length === 0) {
-      if (typeof summary === 'string') {
-        // Try to extract some highlights from the summary
-        const sentences = summary.split(/[.!?]+/).filter(s => s.trim().length > 10).slice(0, 5);
-        highlights = sentences.length >= 3 ? sentences : ["Experience", "Skills", "Education", "Achievements", "Strengths"];
-      } else {
-        highlights = ["Experience", "Skills", "Education", "Achievements", "Strengths"];
-      }
-    }
-    
     // Ensure we have exactly 5 highlights
-    while (highlights.length < 5) {
-      highlights.push("Professional Skill");
+    while (keywords.length < 5) {
+      keywords.push("Professional Skill");
     }
     
-    if (highlights.length > 5) {
-      highlights = highlights.slice(0, 5);
+    if (keywords.length > 5) {
+      keywords = keywords.slice(0, 5);
     }
     
     // Format highlights for the prompt
-    const highlightsText = highlights.join(", ");
+    const highlightsText = keywords.join(", ");
     console.log("Using highlights for image generation:", highlightsText);
     
     // Generate a professional cat image presenting resume highlights
     const imageOutput = await replicate.run(
-      "stability-ai/sdxl:c221b2b8ef527988fb59bf24a8b97c4561f1c671f73bd389f866bfb27c061316",
+      "black-forest-labs/flux-1.1-pro",
       {
         input: {
-          prompt: `A cute professional cat in a business suit presenting a resume on a screen. The cat is pointing to a bullet-point list showing: ${highlightsText}. Corporate office setting, colorful, detailed, professional lighting.`,
+          prompt: `A shocked and funny cat image on a screen. The cat is pointing to a bullet-point list showing: ${highlightsText}, keep the text very sharp and clear. random environment, colorful, detailed, professional lighting.`,
           negative_prompt: "poor quality, blurry, distorted, disfigured, bad anatomy, text, watermark, signature, bad proportions",
           width: 768,
           height: 768,
